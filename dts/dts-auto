@@ -1,0 +1,46 @@
+#!/bin/bash
+
+##########################################################################
+# Copyright (C) [2013] [The FURTHeR Project]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##########################################################################
+
+###################################################################
+# DTS auto start-stop script. Must be run by the apelon user.
+#
+# Created by:   Oren 17-AUG-09
+# Last updated: Oren 17-AUG-09
+###################################################################
+
+source ~/.bash_profile
+
+case "$1" in
+    'start')
+        # Start Apelon DTS servers
+        echo "Starting Apelon DTS production server"
+	cd $pbin
+	./StartApelonServer.sh >& apelon-prod.log &
+
+#        echo "Starting Apelon DTS development server"
+#	cd $dbin
+#	./StartApelonServer.sh >& apelon-dev.log &
+        ;;
+    'stop')
+        echo "Killing all Apelon DTS processes"
+	ps aux | grep java | grep Apelon | awk {'print $2'} | xargs -iddd kill -9 ddd
+        ;;
+    *)
+	echo "usage: $0 <start|stop>"
+	;;
+esac

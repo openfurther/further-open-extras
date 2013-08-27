@@ -1,0 +1,76 @@
+#!/bin/bash
+
+##########################################################################
+# Copyright (C) [2013] [The FURTHeR Project]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##########################################################################
+
+
+###################################################################
+# i2b2 auto start-stop script. Must be run by the root user.
+#
+# Created by:   Oren 17-AUG-09 
+# Last updated: Oren 17-AUG-09
+###################################################################
+
+# Set up environment
+source $HOME/.bash_profile
+DIRNAME=`dirname $0`
+PROGNAME=`basename $0`
+
+case "$1" in
+    'start')
+        # Start tomcat
+        echo "Starting Tomcat"
+        $TOMCAT_HOME/bin/catalina.sh start >& $LOG_HOME/tomcat.log &
+
+        # Start jboss
+        echo "Starting JBoss"
+	export JAVA_OPTS="$JAVA_OPTS -Xmx1200m"
+        nohup $JBOSS_HOME/bin/run.sh -b 0.0.0.0 >& $LOG_HOME/jboss.log &
+        ;;
+
+    'debug')
+        # Start jboss in debug mode
+        JBOSS_JPDA_ADDRESS=5005
+        echo "Starting JBoss in debug mode, listening on port $JBOSS_JPDA_ADDRESS"
+	export JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=$JBOSS_JPDA_ADDRESS,server=y,suspend=n $JAVA_OPTS"
+        nohup $JBOSS_HOME/bin/run.sh -b 0.0.0.0 >& $LOG_HOME/jboss.log &
+	unset JAVA_OPTS
+
+        # Start tomcat in debug mode
+        CATALINA_JPDA_ADDRESS=7171
+        echo "Starting Tomcat in debug mode, listening on port $CATALINA_JPDA_ADDRESS"
+        export CATALINA_OPTS="$CATALINA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,address=$CATALINA_JPDA_ADDRESS,server=y,suspend=n"
+        $TOMCAT_HOME/bin/catalina.sh start >& $LOG_HOME/tomcat.log &
+        ;;
+
+    'stop')
+        # Stop tomcat
+        echo "Stopping Tomcat"
+        $TOMCAT_HOME/bin/catalina.sh stop >& $LOG_HOME/tomcat.log &
+
+        # Stop jboss
+        echo "Stopping JBoss"
+        $JBOSS_HOME/bin/shutdown.sh -S
+        ;;
+
+    *)
+	echo "Usage: ${PROGNAME} <start|debug|stop>"
+	echo ""
+	echo "start    Starts i2b2 servers in normal mode"
+	echo "debug    Starts i2b2 servers in debug mode"
+	echo "stop     Shuts down i2b2 servers"
+	;;
+esac
