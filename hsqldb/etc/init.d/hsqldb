@@ -339,6 +339,8 @@ HSQLDB_PID=
     }
     kill -0 "$HSQLDB_PID" > /dev/null 2>&1 || {
         echo 'Removing stale pid file'
+	# Remove the password update if it's there otherwise we won't be able to start
+        sed -i "s/^password.*/password /" $AUTH_FILE
         rm -f "$PIDFILE" || {
             echo "Failed to remove pid file '$PIDFILE'" 1>&2
             exit 6
