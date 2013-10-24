@@ -33,4 +33,4 @@ if [[ ($# -ne 0) ]]; then
 fi
 
 nohup $ESB_HOME/bin/servicemix server >&$LOG_HOME/esb.log &
-echo "Done"
+echo "Staring ESB"
